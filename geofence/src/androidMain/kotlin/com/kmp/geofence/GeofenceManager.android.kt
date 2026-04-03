@@ -12,7 +12,7 @@ import com.google.android.gms.location.GeofencingRequest
 import com.google.android.gms.location.LocationServices
 
 actual class GeofenceManager {
-    private val context: Context = InjectorCommon.mContextArgs.applicationContext
+    private val context: Context = GeofenceContext.get()
     private val geofencingClient = LocationServices.getGeofencingClient(context)
     private var eventListener: GeofenceEventListener? = null
     
