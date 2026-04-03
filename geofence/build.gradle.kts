@@ -4,6 +4,25 @@ plugins {
     id("maven-publish")
 }
 
+publishing {
+    publications {
+        create<MavenPublication>("release") {
+            groupId = "com.github.mallikarjunpatelsh"
+            artifactId = "kmp-geofence-library"
+            version = "1.0.0"
+        }
+    }
+    repositories {
+        maven {
+            url = uri("https://maven.pkg.github.com/mallikarjunpatelsh/kmp-geofence-library")
+            credentials {
+                username = System.getenv("GITHUB_USERNAME")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+}
+
 kotlin {
     androidTarget {
         publishLibraryVariants("release", "debug")
