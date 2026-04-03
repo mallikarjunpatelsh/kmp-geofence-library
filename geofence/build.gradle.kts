@@ -1,38 +1,25 @@
+import java.util.Properties
+
 plugins {
     kotlin("multiplatform")
     id("com.android.library")
-    id("maven-publish")
+    `maven-publish`
+    signing
 }
 
-publishing {
-    publications {
-        create<MavenPublication>("release") {
-            groupId = "com.github.mallikarjunpatelsh"
-            artifactId = "kmp-geofence-library"
-            version = "1.0.0"
-        }
-    }
-    repositories {
-        maven {
-            url = uri("https://maven.pkg.github.com/mallikarjunpatelsh/kmp-geofence-library")
-            credentials {
-                username = System.getenv("GITHUB_USERNAME")
-                password = System.getenv("GITHUB_TOKEN")
-            }
-        }
-    }
-}
+group = "io.github.mallikarjunpatelsh"
+version = "1.0.0"
 
 kotlin {
     androidTarget {
-        publishLibraryVariants("release", "debug")
+        publishLibraryVariants("release")
         compilations.all {
             kotlinOptions {
                 jvmTarget = "1.8"
             }
         }
     }
-    
+
     listOf(
         iosX64(),
         iosArm64(),
@@ -71,6 +58,56 @@ kotlin {
             iosSimulatorArm64Main.dependsOn(this)
         }
     }
+}
+
+publishing {
+    publications.withType<MavenPublication> {
+        pom {
+            name.set("KMP Geofence Library")
+            description.set("A Kotlin Multiplatform library for geofencing on Android and iOS")
+            url.set("https://github.com/mallikarjunpatelsh/kmp-geofence-library")
+
+            licenses {
+                license {
+                    name.set("MIT License")
+                    url.set("https://opensource.org/licenses/MIT")
+                }
+            }
+
+            developers {
+                developer {
+                    id.set("mallikarjunpatelsh")
+                    name.set("Mallikarjun Patel")
+                    email.set("mallikarjunpatelsh@gmail.com")
+                }
+            }
+
+            scm {
+                connection.set("scm:git:git://github.com/mallikarjunpatelsh/kmp-geofence-library.git")
+                developerConnection.set("scm:git:ssh://github.com/mallikarjunpatelsh/kmp-geofence-library.git")
+                url.set("https://github.com/mallikarjunpatelsh/kmp-geofence-library")
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name = "MavenCentral"
+            url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+            credentials {
+                username = System.getenv("SONATYPE_USERNAME")
+                password = System.getenv("SONATYPE_PASSWORD")
+            }
+        }
+    }
+}
+
+signing {
+    useInMemoryPgpKeys(
+        System.getenv("MAVEN_GPG_PRIVATE_KEY"),
+        System.getenv("MAVEN_GPG_PASSPHRASE")
+    )
+    sign(publishing.publications)
 }
 
 android {

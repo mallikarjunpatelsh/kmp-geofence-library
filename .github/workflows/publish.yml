@@ -1,13 +1,13 @@
-name: Publish Library
+name: Publish to Maven Central
 
 on:
   push:
     tags:
-      - '*'  # triggers on any version tag like 1.0.0
+      - '*'
 
 jobs:
   publish:
-    runs-on: macos-latest  # macos is required for iOS/KMP builds
+    runs-on: macos-latest
 
     steps:
       - name: Checkout
@@ -25,8 +25,10 @@ jobs:
       - name: Grant Gradle permissions
         run: chmod +x gradlew
 
-      - name: Publish to GitHub Packages
+      - name: Publish to Maven Central
         run: ./gradlew publish
         env:
-          GITHUB_USERNAME: mallikarjunpatelsh
-          GITHUB_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          MAVEN_GPG_PRIVATE_KEY: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
