@@ -25,13 +25,5 @@ jobs:
       - name: Grant Gradle permissions
         run: chmod +x gradlew
 
-      - name: List tasks
-        run: ./gradlew :geofence:tasks --all | grep -i nmcp
-
-      - name: Publish to Maven Central
-        run: ./gradlew :geofence:publishAllPublicationsToMavenCentral
-        env:
-          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
-          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
-          MAVEN_GPG_PRIVATE_KEY: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
-          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+      - name: List all tasks
+        run: ./gradlew :geofence:tasks --all
