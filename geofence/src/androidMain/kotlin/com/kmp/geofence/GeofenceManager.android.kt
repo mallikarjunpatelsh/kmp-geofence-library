@@ -18,6 +18,7 @@ actual class GeofenceManager {
     
     private val geofencePendingIntent: PendingIntent by lazy {
         val intent = Intent(context, GeofenceBroadcastReceiver::class.java)
+        intent.action = "com.kmp.geofence.ACTION_GEOFENCE_TRANSITION" // add action
         PendingIntent.getBroadcast(
             context,
             0,
