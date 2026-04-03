@@ -13,20 +13,23 @@ A Kotlin Multiplatform library for geofencing on Android and iOS with callback-b
 
 ## Installation
 
-### Gradle
-
-Add the library to your project:
-
+### Step 1: Add JitPack repository
+In your `settings.gradle.kts`:
 ```kotlin
-// In your shared module's build.gradle.kts
-kotlin {
-    sourceSets {
-        val commonMain by getting {
-            dependencies {
-                implementation("com.kmp.geofence:geofence:1.0.0")
-            }
-        }
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = uri("https://jitpack.io") }
     }
+}
+```
+
+### Step 2: Add dependency
+In your `build.gradle.kts`:
+```kotlin
+dependencies {
+  implementation("com.github.mallikarjunpatelsh:kmp-geofence-library:1.0.2")
 }
 ```
 
@@ -77,8 +80,8 @@ class MyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         
-        // Initialize InjectorCommon with application context
-        InjectorCommon.mContextArgs = InjectorCommon.ContextArgs(this)
+        // Initialize Geofence context with application context
+        GeofenceContext.init(this)
     }
 }
 ```
@@ -320,28 +323,6 @@ class MyGeofenceHandler(context: Context) {
 - Requires "Always" location permission for background monitoring
 - Requires "Full Accuracy" for iOS 14+
 - Maximum 20 geofences can be monitored simultaneously per app
-
-## Building the Library
-
-```bash
-# Build for all platforms
-./gradlew build
-
-# Build Android AAR
-./gradlew :geofence:assembleRelease
-
-# Build iOS Framework
-./gradlew :geofence:linkReleaseFrameworkIosArm64
-```
-
-## Publishing
-
-To publish to your Git repository:
-
-1. Update version in `build.gradle.kts`
-2. Build the library
-3. Commit and push to your repository
-4. Tag the release: `git tag v1.0.0 && git push origin v1.0.0`
 
 ## License
 
