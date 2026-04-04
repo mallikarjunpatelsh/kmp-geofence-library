@@ -17,7 +17,7 @@ A Kotlin Multiplatform library for geofencing on Android and iOS with callback-b
 In your `build.gradle.kts`:
 ```kotlin
 commonMain.dependencies {
-    implementation("io.github.mallikarjunpatelsh:geofence:1.1.4")
+    implementation("io.github.mallikarjunpatelsh:geofence:1.0.2")
 }
 ```
 
