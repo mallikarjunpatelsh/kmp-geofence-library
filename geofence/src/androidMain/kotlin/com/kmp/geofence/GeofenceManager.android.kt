@@ -14,11 +14,10 @@ import com.google.android.gms.location.LocationServices
 actual class GeofenceManager {
     private val context: Context = GeofenceContext.get()
     private val geofencingClient = LocationServices.getGeofencingClient(context)
-    private var eventListener: GeofenceEventListener? = null
-    
+
     private val geofencePendingIntent: PendingIntent by lazy {
         val intent = Intent(context, GeofenceBroadcastReceiver::class.java)
-        intent.action = "com.kmp.geofence.ACTION_GEOFENCE_TRANSITION" // add action
+        // NO action
         PendingIntent.getBroadcast(
             context,
             0,
@@ -27,20 +26,9 @@ actual class GeofenceManager {
         )
     }
 
-    init {
-        GeofenceBroadcastReceiver.setEventListener { event ->
-            eventListener?.let {
-                when (event.transitionType) {
-                    TransitionType.ENTER -> it.onGeofenceEnter(event)
-                    TransitionType.EXIT -> it.onGeofenceExit(event)
-                }
-            }
-        }
-    }
-
     actual fun checkLocationPermissions(): PermissionStatus {
         val missingPermissions = mutableListOf<PermissionType>()
-        
+
         val fineLocation = ActivityCompat.checkSelfPermission(
             context,
             Manifest.permission.ACCESS_FINE_LOCATION
@@ -55,22 +43,16 @@ actual class GeofenceManager {
             true
         }
 
-        if (!fineLocation) {
-            missingPermissions.add(PermissionType.FINE_LOCATION)
-        }
-        
-        if (!backgroundLocation) {
-            missingPermissions.add(PermissionType.BACKGROUND_LOCATION)
-        }
+        if (!fineLocation) missingPermissions.add(PermissionType.FINE_LOCATION)
+        if (!backgroundLocation) missingPermissions.add(PermissionType.BACKGROUND_LOCATION)
 
         return if (missingPermissions.isEmpty()) {
             PermissionStatus.Granted
         } else {
-            val message = buildString {
-                append("Missing permissions: ")
-                append(missingPermissions.joinToString(", ") { it.name })
-            }
-            PermissionStatus.Denied(missingPermissions, message)
+            PermissionStatus.Denied(
+                missingPermissions,
+                "Missing permissions: ${missingPermissions.joinToString(", ") { it.name }}"
+            )
         }
     }
 
@@ -88,9 +70,10 @@ actual class GeofenceManager {
                 val deniedStatus = permissionStatus as PermissionStatus.Denied
                 throw GeofencePermissionException(
                     code = "GEOFENCE_PERMISSION_DENIED",
-                    message = "Location permissions are required for geofencing. ${deniedStatus.message}"
+                    message = "Location permissions are required. ${deniedStatus.message}"
                 )
             }
+
             val geofence = Geofence.Builder()
                 .setRequestId(id)
                 .setCircularRegion(latitude, longitude, radius)
@@ -105,15 +88,20 @@ actual class GeofenceManager {
                 .addGeofence(geofence)
                 .build()
 
+            if (ActivityCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                return
+            }
             geofencingClient.addGeofences(request, geofencePendingIntent)
-                .addOnSuccessListener {
-                    onSuccess()
-                }
+                .addOnSuccessListener { onSuccess() }
                 .addOnFailureListener { exception ->
                     onFailure(exception.message ?: "Failed to add geofence")
                 }
         } catch (e: GeofencePermissionException) {
-            onFailure("[${e.code}] ${e.message}")
+            throw e
         } catch (e: Exception) {
             onFailure(e.message ?: "Unknown error occurred")
         }
@@ -125,16 +113,24 @@ actual class GeofenceManager {
         onFailure: (error: String) -> Unit
     ) {
         geofencingClient.removeGeofences(ids)
-            .addOnSuccessListener {
-                onSuccess()
-            }
+            .addOnSuccessListener { onSuccess() }
             .addOnFailureListener { exception ->
                 onFailure(exception.message ?: "Failed to remove geofences")
             }
     }
 
+    // Now setGeofenceEventListener sets directly on BroadcastReceiver
     actual fun setGeofenceEventListener(listener: GeofenceEventListener?) {
-        this.eventListener = listener
+        if (listener == null) {
+            GeofenceBroadcastReceiver.setEventListener { }
+        } else {
+            GeofenceBroadcastReceiver.setEventListener { event ->
+                when (event.transitionType) {
+                    TransitionType.ENTER -> listener.onGeofenceEnter(event)
+                    TransitionType.EXIT -> listener.onGeofenceExit(event)
+                }
+            }
+        }
     }
 }
 
